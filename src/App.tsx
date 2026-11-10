@@ -358,14 +358,14 @@ export default function App() {
             </div>
 
             {/* Canvas / SVG Output Area */}
-            <div className="flex-1 flex items-center justify-center p-2 bg-slate-50 rounded-lg min-h-[300px] overflow-hidden">
+            <div className="flex-1 flex items-center justify-center p-2 bg-slate-50 rounded-lg min-h-[340px] overflow-hidden">
               {/* Single Tile Mode */}
               {previewMode === 'tile' && (
                 <div
-                  className="rounded border border-slate-300 shadow-xs overflow-hidden relative transition-transform"
+                  className="rounded-lg border border-slate-300 shadow-xs overflow-hidden relative transition-transform"
                   style={{
-                    width: 256,
-                    height: 256,
+                    width: 270,
+                    height: 270,
                     backgroundColor: config.transparentBackground ? 'transparent' : config.backgroundColor,
                   }}
                 >
@@ -379,10 +379,8 @@ export default function App() {
               {/* 3x3 Seamless Grid Mode */}
               {previewMode === 'seamless' && (
                 <div
-                  className="rounded border border-slate-300 shadow-xs overflow-hidden relative"
+                  className="w-full max-w-[340px] aspect-square rounded-lg border border-slate-300 shadow-sm overflow-hidden relative"
                   style={{
-                    width: 288,
-                    height: 288,
                     backgroundColor: config.transparentBackground ? '#ffffff' : config.backgroundColor,
                   }}
                 >
@@ -404,7 +402,7 @@ export default function App() {
                         className="w-full h-full relative"
                         style={{
                           opacity: i === 4 ? 1 : 0.35,
-                          zIndex: i === 4 ? 10 : 1,
+                          zIndex: i === 4 ? 5 : 1,
                           backgroundImage: `url("${svgDataUrl}")`,
                           backgroundRepeat: 'no-repeat',
                           backgroundSize: '100% 100%',
@@ -414,7 +412,7 @@ export default function App() {
                   </div>
                   {showSeams && (
                     <div
-                      className="absolute inset-0 pointer-events-none border border-emerald-600/40"
+                      className="absolute inset-0 pointer-events-none border border-emerald-600/40 z-20"
                       style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(3, 1fr)',
@@ -424,13 +422,13 @@ export default function App() {
                       {Array.from({ length: 9 }).map((_, i) => (
                         <div
                           key={i}
-                          className="border border-dashed border-emerald-600/40 flex items-start justify-start p-1"
+                          className="border border-dashed border-emerald-600/40 flex items-start justify-start p-1.5"
                           style={{
                             backgroundColor: i === 4 ? 'rgba(5, 150, 105, 0.08)' : 'transparent',
                           }}
                         >
                           {i === 4 && (
-                            <span className="text-[8px] font-mono font-bold text-emerald-700 bg-white/90 px-1 py-0.5 rounded border border-emerald-300 shadow-xs">
+                            <span className="text-[9px] font-mono font-bold text-emerald-800 bg-white/95 px-1.5 py-0.5 rounded border border-emerald-300 shadow-xs">
                               核心单胞
                             </span>
                           )}
