@@ -378,7 +378,7 @@ export default function App() {
                   {config.transparentBackground && (
                     <div className="absolute inset-0 bg-[linear-gradient(45deg,#cbd5e1_25%,transparent_25%),linear-gradient(-45deg,#cbd5e1_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#cbd5e1_75%),linear-gradient(-45deg,transparent_75%,#cbd5e1_75%)] [background-size:16px_16px] [background-position:0_0,0_8px,8px_-8px,-8px_0px] opacity-40 pointer-events-none" />
                   )}
-                  <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: svgContent }} />
+                  <div className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:block" dangerouslySetInnerHTML={{ __html: svgContent }} />
                 </div>
               )}
 
