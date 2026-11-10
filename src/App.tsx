@@ -9,7 +9,6 @@ import { CARTOGRAPHIC_SYMBOLS } from './data/symbolsData';
 import { CARTOGRAPHIC_PRESETS } from './data/presets';
 import { PatternEngine } from './engine/patternEngine';
 import { CartoSymbol, DotPoint, GeneratorConfig, PresetPattern, SymbolSelection } from './types';
-import { Eye, Grid, MapPin, Maximize2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 const DEFAULT_CONFIG: GeneratorConfig = {
   gridSize: 256,
@@ -48,7 +47,6 @@ export default function App() {
   // Preview mode for Column 2
   const [previewMode, setPreviewMode] = useState<'tile' | 'seamless' | 'map'>('tile');
   const [showSeams, setShowSeams] = useState(true);
-  const [zoom, setZoom] = useState(1);
   const [isCopied, setIsCopied] = useState(false);
 
   // Modals state
@@ -126,8 +124,7 @@ export default function App() {
     setDots(PatternEngine.zigzag(dots, config.gridSize));
   };
 
-  // Symbol selection handlers for the classic table
-  // "用途 / 使用" Button: replaces current symbol
+  // Symbol selection handlers
   const handleUseSymbol = (symbolId: string) => {
     setSelectedSymbols([
       {
@@ -142,7 +139,6 @@ export default function App() {
     ]);
   };
 
-  // "+" Button: adds symbol to the combination (e.g. bforest + marsh)
   const handleAddSymbol = (symbolId: string) => {
     setSelectedSymbols((prev) => {
       const exists = prev.some((s) => s.symbolId === symbolId);
@@ -253,7 +249,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-[#f4f5f8] text-slate-800">
       {/* Top Navbar */}
       <Header
         onSelectPreset={handleSelectPreset}
@@ -268,17 +264,17 @@ export default function App() {
         {/* TOP ROW: 3-Column Classic Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
           {/* COLUMN 1: 点状模式 (Dot Pattern) */}
-          <div className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col shadow-lg">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800 mb-2">
-              <strong className="text-xs text-slate-200">点状模式 (Dot Pattern):</strong>
-              <span className="text-[10px] text-emerald-400 font-mono">
+          <div className="lg:col-span-4 bg-white border border-slate-300 rounded-xl p-3 flex flex-col shadow-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200 mb-2">
+              <strong className="text-xs text-slate-800">点状模式:</strong>
+              <span className="text-[10px] text-slate-500 font-mono font-medium">
                 {dots.length} 点位
               </span>
             </div>
 
-            <div className="flex-1 flex items-center justify-center p-2 bg-slate-950/70 rounded-lg min-h-[300px]">
+            <div className="flex-1 flex items-center justify-center p-2 bg-slate-50 rounded-lg min-h-[300px]">
               <div
-                className="bg-white rounded border-2 border-slate-600 shadow-inner overflow-hidden relative"
+                className="bg-white rounded border border-slate-300 shadow-xs overflow-hidden relative"
                 style={{ width: 256, height: 256 }}
               >
                 <svg viewBox={`0 0 ${config.gridSize} ${config.gridSize}`} className="w-full h-full">
@@ -288,23 +284,23 @@ export default function App() {
                 </svg>
               </div>
             </div>
-            <div className="text-[10px] text-slate-400 text-center pt-2">
+            <div className="text-[10px] text-slate-500 text-center pt-2">
               周期边界拓扑点位网格 ({config.gridSize}×{config.gridSize} px)
             </div>
           </div>
 
           {/* COLUMN 2: 符号图案 (Symbol Pattern & Live Render) */}
-          <div className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col shadow-lg">
+          <div className="lg:col-span-4 bg-white border border-slate-300 rounded-xl p-3 flex flex-col shadow-xs">
             {/* Top Toolbar: Color Pickers & Preview Switcher */}
-            <div className="flex flex-wrap items-center justify-between pb-2 border-b border-slate-800 mb-2 gap-2">
+            <div className="flex flex-wrap items-center justify-between pb-2 border-b border-slate-200 mb-2 gap-2">
               <div className="flex items-center space-x-2">
-                <strong className="text-xs text-slate-200">符号图案:</strong>
+                <strong className="text-xs text-slate-800">符号图案:</strong>
                 {/* Symbol Color Picker */}
                 <input
                   type="color"
                   value={config.symbolColor}
                   onChange={(e) => setConfig((prev) => ({ ...prev, symbolColor: e.target.value }))}
-                  className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                  className="w-5 h-5 rounded cursor-pointer border border-slate-300 bg-transparent"
                   title="符号颜色"
                 />
                 {/* Background Color Picker */}
@@ -314,27 +310,27 @@ export default function App() {
                   onChange={(e) =>
                     setConfig((prev) => ({ ...prev, backgroundColor: e.target.value, transparentBackground: false }))
                   }
-                  className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                  className="w-5 h-5 rounded cursor-pointer border border-slate-300 bg-transparent"
                   title="背景底色"
                 />
                 {/* Transparent toggle */}
-                <label className="text-[10px] text-slate-400 flex items-center space-x-1 cursor-pointer">
+                <label className="text-[10px] text-slate-600 flex items-center space-x-1 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={config.transparentBackground}
                     onChange={(e) => setConfig((prev) => ({ ...prev, transparentBackground: e.target.checked }))}
-                    className="rounded bg-slate-800 border-slate-700 text-emerald-500"
+                    className="rounded bg-white border-slate-300 text-emerald-600 focus:ring-0"
                   />
                   <span>透明</span>
                 </label>
               </div>
 
               {/* View mode buttons */}
-              <div className="flex items-center space-x-1 bg-slate-950 p-0.5 rounded border border-slate-800 text-[10px]">
+              <div className="flex items-center space-x-1 bg-slate-100 p-0.5 rounded border border-slate-200 text-[10px]">
                 <button
                   onClick={() => setPreviewMode('tile')}
                   className={`px-1.5 py-0.5 rounded transition ${
-                    previewMode === 'tile' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                    previewMode === 'tile' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                   title="单格单胞"
                 >
@@ -343,7 +339,7 @@ export default function App() {
                 <button
                   onClick={() => setPreviewMode('seamless')}
                   className={`px-1.5 py-0.5 rounded transition ${
-                    previewMode === 'seamless' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                    previewMode === 'seamless' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                   title="3x3 无缝矩阵"
                 >
@@ -352,7 +348,7 @@ export default function App() {
                 <button
                   onClick={() => setPreviewMode('map')}
                   className={`px-1.5 py-0.5 rounded transition ${
-                    previewMode === 'map' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                    previewMode === 'map' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                   title="地图面填充实景"
                 >
@@ -362,11 +358,11 @@ export default function App() {
             </div>
 
             {/* Canvas / SVG Output Area */}
-            <div className="flex-1 flex items-center justify-center p-2 bg-slate-950/70 rounded-lg min-h-[300px] overflow-hidden">
+            <div className="flex-1 flex items-center justify-center p-2 bg-slate-50 rounded-lg min-h-[300px] overflow-hidden">
               {/* Single Tile Mode */}
               {previewMode === 'tile' && (
                 <div
-                  className="rounded border-2 border-slate-600 shadow-inner overflow-hidden relative transition-transform"
+                  className="rounded border border-slate-300 shadow-xs overflow-hidden relative transition-transform"
                   style={{
                     width: 256,
                     height: 256,
@@ -374,7 +370,7 @@ export default function App() {
                   }}
                 >
                   {config.transparentBackground && (
-                    <div className="absolute inset-0 bg-[linear-gradient(45deg,#334155_25%,transparent_25%),linear-gradient(-45deg,#334155_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#334155_75%),linear-gradient(-45deg,transparent_75%,#334155_75%)] [background-size:16px_16px] [background-position:0_0,0_8px,8px_-8px,-8px_0px] opacity-40 pointer-events-none" />
+                    <div className="absolute inset-0 bg-[linear-gradient(45deg,#cbd5e1_25%,transparent_25%),linear-gradient(-45deg,#cbd5e1_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#cbd5e1_75%),linear-gradient(-45deg,transparent_75%,#cbd5e1_75%)] [background-size:16px_16px] [background-position:0_0,0_8px,8px_-8px,-8px_0px] opacity-40 pointer-events-none" />
                   )}
                   <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: svgContent }} />
                 </div>
@@ -383,22 +379,22 @@ export default function App() {
               {/* 3x3 Seamless Grid Mode */}
               {previewMode === 'seamless' && (
                 <div
-                  className="rounded border-2 border-slate-600 shadow-inner overflow-hidden relative"
+                  className="rounded border border-slate-300 shadow-xs overflow-hidden relative"
                   style={{
                     width: 280,
                     height: 280,
                     backgroundImage: `url("${svgDataUrl}")`,
                     backgroundRepeat: 'repeat',
                     backgroundSize: `${config.gridSize / 2}px ${config.gridSize / 2}px`,
-                    backgroundColor: config.transparentBackground ? '#0f172a' : config.backgroundColor,
+                    backgroundColor: config.transparentBackground ? '#ffffff' : config.backgroundColor,
                   }}
                 >
                   {showSeams && (
-                    <div className="absolute inset-0 pointer-events-none border border-emerald-500/30 grid grid-cols-2 grid-rows-2">
-                      <div className="border border-dashed border-emerald-500/40" />
-                      <div className="border border-dashed border-emerald-500/40" />
-                      <div className="border border-dashed border-emerald-500/40" />
-                      <div className="border border-dashed border-emerald-500/40" />
+                    <div className="absolute inset-0 pointer-events-none border border-emerald-600/40 grid grid-cols-2 grid-rows-2">
+                      <div className="border border-dashed border-emerald-600/50" />
+                      <div className="border border-dashed border-emerald-600/50" />
+                      <div className="border border-dashed border-emerald-600/50" />
+                      <div className="border border-dashed border-emerald-600/50" />
                     </div>
                   )}
                 </div>
@@ -406,7 +402,7 @@ export default function App() {
 
               {/* Map Polygon Simulation */}
               {previewMode === 'map' && (
-                <div className="w-full h-[280px] bg-[#cad2c5] rounded border border-slate-600 overflow-hidden relative shadow-inner">
+                <div className="w-full h-[280px] bg-[#cad2c5] rounded border border-slate-300 overflow-hidden relative shadow-xs">
                   <svg viewBox="0 0 300 280" className="w-full h-full">
                     <defs>
                       <pattern id="classicMapPat" patternUnits="userSpaceOnUse" width={64} height={64}>
@@ -431,12 +427,12 @@ export default function App() {
               )}
             </div>
 
-            <div className="text-[10px] text-slate-400 text-center pt-2 flex items-center justify-center space-x-3">
+            <div className="text-[10px] text-slate-500 text-center pt-2 flex items-center justify-center space-x-3">
               <span>无缝周期渲染</span>
               {previewMode === 'seamless' && (
                 <button
                   onClick={() => setShowSeams(!showSeams)}
-                  className="text-emerald-400 underline"
+                  className="text-emerald-700 underline font-medium"
                 >
                   {showSeams ? '隐藏接缝' : '显示接缝'}
                 </button>
