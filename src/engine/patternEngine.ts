@@ -68,7 +68,7 @@ export class PatternEngine {
     metric: number = 2,
     steps: number = 1
   ): DotPoint[] {
-    let currentDots = dots.map(d => ({ ...d }));
+    let currentDots = dots.map((d) => ({ ...d }));
     const stepFactor = 0.02;
 
     const gridCellSize = Math.max(8, dotRadius);
@@ -85,7 +85,7 @@ export class PatternEngine {
         grid[iy * gridCnt + ix].push(i);
       }
 
-      const nextDots = currentDots.map(d => ({ ...d }));
+      const nextDots = currentDots.map((d) => ({ ...d }));
 
       for (let i = 0; i < currentDots.length; i++) {
         const ptx = currentDots[i].x;
@@ -150,7 +150,6 @@ export class PatternEngine {
           let nx = currentDots[i].x + (ax / wsum) * dotRadius * stepFactor;
           let ny = currentDots[i].y + (ay / wsum) * dotRadiusY * stepFactor;
 
-          // Wrap boundaries
           if (nx < 0) nx += gridSize;
           if (ny < 0) ny += gridSize;
           if (nx >= gridSize) nx -= gridSize;
@@ -167,11 +166,8 @@ export class PatternEngine {
     return currentDots;
   }
 
-  /**
-   * Shake pattern randomly
-   */
   static shake(dots: DotPoint[], gridSize: number, dotDist: number, strength: number, rng: () => number): DotPoint[] {
-    return dots.map(d => {
+    return dots.map((d) => {
       let nx = d.x + (rng() - 0.5) * strength * dotDist;
       let ny = d.y + (rng() - 0.5) * strength * dotDist;
       if (nx < 0) nx += gridSize;
@@ -182,11 +178,8 @@ export class PatternEngine {
     });
   }
 
-  /**
-   * Jitter coordinates slightly
-   */
   static jitter(dots: DotPoint[], gridSize: number, strength: number = 1.5, rng: () => number): DotPoint[] {
-    return dots.map(d => {
+    return dots.map((d) => {
       let nx = d.x + (rng() - 0.5) * strength;
       let ny = d.y + (rng() - 0.5) * strength;
       if (nx < 0) nx += gridSize;
@@ -197,9 +190,6 @@ export class PatternEngine {
     });
   }
 
-  /**
-   * Rotate pattern 45 degrees and scale to fit
-   */
   static rotate45(dots: DotPoint[], gridSize: number): DotPoint[] {
     const newDots: DotPoint[] = [];
     const sqrt2 = Math.SQRT2;
@@ -222,18 +212,12 @@ export class PatternEngine {
     return newDots;
   }
 
-  /**
-   * Swap X and Y coordinates (diagonal mirror)
-   */
   static swap(dots: DotPoint[]): DotPoint[] {
-    return dots.map(d => ({ ...d, x: d.y, y: d.x }));
+    return dots.map((d) => ({ ...d, x: d.y, y: d.x }));
   }
 
-  /**
-   * Horizontal zigzag displacement
-   */
   static zigzag(dots: DotPoint[], gridSize: number): DotPoint[] {
-    return dots.map(d => {
+    return dots.map((d) => {
       let nx = d.x + (d.y % 16 > 8 ? 4 : -4);
       if (nx < 0) nx += gridSize;
       if (nx >= gridSize) nx -= gridSize;
@@ -243,6 +227,7 @@ export class PatternEngine {
 
   /**
    * Render pattern into standard SVG markup with periodic boundary wrapping
+   * Correctly supports multi-variant symbols (e.g. wood, trees1..5, vpixel)
    */
   static buildSvgString(
     dots: DotPoint[],
@@ -269,49 +254,53 @@ export class PatternEngine {
       return `<svg xmlns="http://www.w3.org/2000/svg" width="${gridSize}" height="${gridSize}" viewBox="0 0 ${gridSize} ${gridSize}"></svg>`;
     }
 
-    // Prepare symbol pool according to weights
     const symbolPool: SymbolSelection[] = [];
-    selectedSymbols.forEach(s => {
+    selectedSymbols.forEach((s) => {
       const w = Math.max(1, Math.round(s.weight || 1));
       for (let k = 0; k < w; k++) {
         symbolPool.push(s);
       }
     });
 
-    // Helper to get raw SVG inner content of a symbol
-    const getSymbolSnippet = (sym: CartoSymbol, color: string, casing: boolean, casingW: number) => {
-      let rawSvg = Array.isArray(sym.svg) ? sym.svg.join('') : sym.svg;
-      
-      // Inject fill color if not in casing mode
+    const getRawSnippet = (rawSnippet: string, color: string, casing: boolean, casingW: number) => {
       if (casing && casingW > 0) {
-        return `<g stroke="${casingColor || '#ffffff'}" stroke-width="${casingW}" stroke-linejoin="round" stroke-linecap="round" fill="none">${rawSvg}</g>`;
+        return `<g stroke="${casingColor || '#ffffff'}" stroke-width="${casingW}" stroke-linejoin="round" stroke-linecap="round" fill="none">${rawSnippet}</g>`;
       }
-      return `<g fill="${color}">${rawSvg}</g>`;
+      return `<g fill="${color}">${rawSnippet}</g>`;
     };
 
     let defsContent = '';
-    const symIdMap: Record<string, { main: string; casing?: string }> = {};
+    // map for defs: symbolId -> variantIndex -> { main: string, casing?: string }
+    const defsMap: Record<string, Array<{ main: string; casing?: string }>> = {};
 
     if (!inlineGeometries) {
-      selectedSymbols.forEach(sel => {
+      selectedSymbols.forEach((sel) => {
         const symbol = symbolLib[sel.symbolId];
         if (!symbol) return;
-        const mainId = `sym-${sel.symbolId}`;
-        const casingId = `sym-${sel.symbolId}-casing`;
-        
-        symIdMap[sel.symbolId] = { main: mainId, casing: casingWidth > 0 ? casingId : undefined };
 
-        if (casingWidth > 0) {
-          defsContent += `<g id="${casingId}">${getSymbolSnippet(symbol, symbolColor, true, casingWidth)}</g>\n`;
-        }
-        defsContent += `<g id="${mainId}">${getSymbolSnippet(symbol, sel.color || symbolColor, false, 0)}</g>\n`;
+        const variants = Array.isArray(symbol.svg) ? symbol.svg : [symbol.svg];
+        defsMap[sel.symbolId] = [];
+
+        variants.forEach((vSvg, vIdx) => {
+          const mainId = `sym-${sel.symbolId}-v${vIdx}`;
+          const casingId = `sym-${sel.symbolId}-v${vIdx}-casing`;
+
+          defsMap[sel.symbolId].push({
+            main: mainId,
+            casing: casingWidth > 0 ? casingId : undefined,
+          });
+
+          if (casingWidth > 0) {
+            defsContent += `<g id="${casingId}">${getRawSnippet(vSvg, symbolColor, true, casingWidth)}</g>\n`;
+          }
+          defsContent += `<g id="${mainId}">${getRawSnippet(vSvg, sel.color || symbolColor, false, 0)}</g>\n`;
+        });
       });
     }
 
-    // Periodic placement collector
     let patternElements = '';
 
-    dots.forEach((dot, idx) => {
+    dots.forEach((dot) => {
       let cx = dot.x;
       let cy = dot.y;
 
@@ -320,50 +309,48 @@ export class PatternEngine {
         cy = Math.round(cy - 0.5);
       }
 
-      // Pick symbol from pool deterministically based on index + seed
       const symIndex = Math.floor(rng() * symbolPool.length);
       const sel = symbolPool[symIndex];
       const symbol = symbolLib[sel.symbolId];
       if (!symbol) return;
 
+      const variants = Array.isArray(symbol.svg) ? symbol.svg : [symbol.svg];
+      const vIndex = Math.floor(rng() * variants.length);
+      const chosenVariantSvg = variants[vIndex];
+
       const scale = sel.scale || 1.0;
       const offX = sel.offsetX === 'auto' ? (symbol.defaultOffsetX ?? 8) : sel.offsetX;
       const offY = sel.offsetY === 'auto' ? (symbol.defaultOffsetY ?? 8) : sel.offsetY;
 
-      // Rotation calculation
       let rotAngle = 0;
       if (sel.randomRotate) {
-        // 13 discrete steps or continuous
         rotAngle = Math.floor(rng() * 12) * 30;
       }
 
-      // Render helper for an offset instance
       const renderAt = (x: number, y: number) => {
         const transformStr = `translate(${x}, ${y}) scale(${scale}) rotate(${rotAngle}) translate(${-offX}, ${-offY})`;
 
         if (inlineGeometries) {
           let inner = '';
           if (casingWidth > 0) {
-            inner += getSymbolSnippet(symbol, symbolColor, true, casingWidth);
+            inner += getRawSnippet(chosenVariantSvg, symbolColor, true, casingWidth);
           }
-          inner += getSymbolSnippet(symbol, sel.color || symbolColor, false, 0);
+          inner += getRawSnippet(chosenVariantSvg, sel.color || symbolColor, false, 0);
           return `<g transform="${transformStr}">${inner}</g>\n`;
         } else {
-          const ids = symIdMap[sel.symbolId];
+          const vDefs = defsMap[sel.symbolId]?.[vIndex];
+          if (!vDefs) return '';
           let inner = '';
-          if (casingWidth > 0 && ids.casing) {
-            inner += `<use href="#${ids.casing}" />`;
+          if (casingWidth > 0 && vDefs.casing) {
+            inner += `<use href="#${vDefs.casing}" />`;
           }
-          inner += `<use href="#${ids.main}" />`;
+          inner += `<use href="#${vDefs.main}" />`;
           return `<g transform="${transformStr}">${inner}</g>\n`;
         }
       };
 
-      // Base symbol placement
       patternElements += renderAt(cx, cy);
 
-      // Periodic boundary wrapping:
-      // If close to left border, duplicate to right border
       const threshold = dotRadius * scale + 16;
 
       if (cx < threshold) {

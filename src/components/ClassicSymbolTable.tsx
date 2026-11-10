@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Search, Plus, Upload } from 'lucide-react';
 import { CARTOGRAPHIC_SYMBOLS } from '../data/symbolsData';
 import { CartoSymbol, SymbolSelection } from '../types';
+import { AutoSvgIcon } from './AutoSvgIcon';
 
 interface ClassicSymbolTableProps {
   selectedSymbols: SymbolSelection[];
@@ -92,17 +93,20 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
     reader.readAsText(file);
   };
 
-  const activeRawSvg = Array.isArray(activeSymbolObj.svg)
-    ? activeSymbolObj.svg[0]
-    : activeSymbolObj.svg;
+  const activeVariants = Array.isArray(activeSymbolObj.svg)
+    ? activeSymbolObj.svg
+    : [activeSymbolObj.svg];
 
   return (
-    <div className="flex flex-col h-full bg-white border border-slate-300 rounded-xl overflow-hidden shadow-sm">
+    <div className="flex flex-col h-full bg-white border border-slate-300 rounded-xl overflow-hidden shadow-xs">
       {/* Header */}
       <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <strong className="text-xs text-slate-800">符号定义:</strong>
-          <span className="text-[10px] text-emerald-700 font-mono font-medium truncate max-w-[200px]" title={selectedSymbols.map((s) => symbolLib[s.symbolId]?.name || s.symbolId).join(' + ')}>
+          <span
+            className="text-[10px] text-emerald-700 font-mono font-medium truncate max-w-[200px]"
+            title={selectedSymbols.map((s) => symbolLib[s.symbolId]?.name || s.symbolId).join(' + ')}
+          >
             已选: {selectedSymbols.map((s) => symbolLib[s.symbolId]?.name || s.symbolId).join(' + ')}
           </span>
         </div>
@@ -195,21 +199,21 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
         </form>
       )}
 
-      {/* The Classic Symbol Table */}
-      <div className="flex-1 overflow-y-auto max-h-[290px] border-b border-slate-200 bg-white">
+      {/* The Classic Symbol Table with Full Multi-variant Icons Display */}
+      <div className="flex-1 overflow-y-auto max-h-[300px] border-b border-slate-200 bg-white">
         <table className="w-full border-collapse text-xs">
           <tbody>
             {filtered.map((item, idx) => {
               const isPrimary = selectedSymbols[0]?.symbolId === item.id;
               const isIncluded = selectedSymbols.some((s) => s.symbolId === item.id);
-              const rawSvg = Array.isArray(item.svg) ? item.svg[0] : item.svg;
+              const variants = Array.isArray(item.svg) ? item.svg : [item.svg];
 
               return (
                 <tr
                   key={item.id}
                   className={`border-b border-slate-200/80 transition ${
                     isPrimary
-                      ? 'bg-emerald-50'
+                      ? 'bg-emerald-50/90'
                       : isIncluded
                       ? 'bg-blue-50/60'
                       : idx % 2 === 1
@@ -218,12 +222,12 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
                   }`}
                 >
                   {/* Name */}
-                  <td className="py-1.5 px-3 font-mono text-slate-800 truncate max-w-[140px]" title={item.name}>
+                  <td className="py-1.5 px-3 font-mono text-slate-800 whitespace-nowrap min-w-[90px]" title={item.name}>
                     {item.name}
                   </td>
 
                   {/* "用途" Button */}
-                  <td className="py-1.5 px-1.5 w-14 text-center">
+                  <td className="py-1.5 px-1 w-14 text-center">
                     <button
                       onClick={() => onUseSymbol(item.id)}
                       className={`px-2 py-0.5 rounded text-[11px] font-semibold transition ${
@@ -238,12 +242,12 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
                   </td>
 
                   {/* "+" Button */}
-                  <td className="py-1.5 px-1.5 w-8 text-center">
+                  <td className="py-1.5 px-1 w-7 text-center">
                     <button
                       onClick={() => onAddSymbol(item.id)}
                       className={`w-5 h-5 rounded text-xs font-bold transition flex items-center justify-center ${
                         isIncluded
-                          ? 'bg-emerald-600 text-white'
+                          ? 'bg-emerald-600 text-white shadow-xs'
                           : 'bg-[#f1a27e] hover:bg-[#e4926d] text-white shadow-xs'
                       }`}
                       title="添加到混合组合 (Add to combination)"
@@ -252,32 +256,63 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
                     </button>
                   </td>
 
-                  {/* Symbol Icon Preview */}
-                  <td className="py-1.5 px-3 w-10 text-center">
-                    <div className="w-6 h-6 mx-auto flex items-center justify-center text-slate-700">
-                      <svg
-                        viewBox="0 0 16 16"
-                        className="w-5 h-5 fill-current text-slate-800"
-                        dangerouslySetInnerHTML={{ __html: rawSvg }}
-                      />
+                  {/* Full Multi-Variant SVG Icons Display (separated by '|') */}
+                  <td className="py-1.5 px-2">
+                    <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-[280px]">
+                      {variants.map((vSvg, vIdx) => (
+                        <React.Fragment key={vIdx}>
+                          {vIdx > 0 && (
+                            <span className="text-slate-300 font-mono text-[10px] select-none flex-shrink-0">
+                              |
+                            </span>
+                          )}
+                          <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
+                            <AutoSvgIcon
+                              svgContent={vSvg}
+                              className="w-4 h-4 text-slate-800"
+                            />
+                          </div>
+                        </React.Fragment>
+                      ))}
                     </div>
                   </td>
                 </tr>
               );
             })}
+
+            {/* Custom symbol row at bottom matching original tool */}
+            <tr className="border-b border-slate-200/80 bg-slate-50/50">
+              <td className="py-1.5 px-3 font-mono text-slate-600">custom</td>
+              <td className="py-1.5 px-1 w-14 text-center">
+                <button
+                  onClick={() => setIsAddingCustom(true)}
+                  className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#768dd6] hover:bg-[#637bc7] text-white shadow-xs"
+                >
+                  用途
+                </button>
+              </td>
+              <td colSpan={2} className="py-1.5 px-2 text-slate-500 italic text-[11px]">
+                | 请使用下方输入框或点击右上方“自定义SVG”
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       {/* The Classic Symbol Bar / Inspector (Bottom of Column 3) */}
-      <div className="p-3 bg-slate-50 flex flex-wrap items-center gap-3 text-xs text-slate-700">
-        {/* Enlarged Symbol Preview Box */}
-        <div className="w-12 h-12 bg-white border border-slate-300 rounded-lg flex items-center justify-center p-1 shadow-xs relative">
-          <svg
-            viewBox="0 0 16 16"
-            className="w-9 h-9 fill-current text-emerald-700"
-            dangerouslySetInnerHTML={{ __html: activeRawSvg }}
-          />
+      <div className="p-3 bg-slate-50 flex flex-wrap items-center gap-2.5 text-xs text-slate-700">
+        {/* Enlarged Symbol Preview Box with All Variants */}
+        <div className="min-w-12 h-12 bg-white border border-slate-300 rounded-lg flex items-center justify-center p-1 shadow-xs relative overflow-x-auto no-scrollbar gap-1">
+          {activeVariants.slice(0, 4).map((vSvg, vIdx) => (
+            <AutoSvgIcon
+              key={vIdx}
+              svgContent={vSvg}
+              className="w-8 h-8 text-emerald-700 flex-shrink-0"
+            />
+          ))}
+          {activeVariants.length > 4 && (
+            <span className="text-[10px] text-slate-400 font-mono">+{activeVariants.length - 4}</span>
+          )}
           <div className="absolute inset-0 border border-dashed border-emerald-400/50 pointer-events-none rounded-lg" />
         </div>
 
