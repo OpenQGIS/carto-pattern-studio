@@ -12,14 +12,14 @@ import { CartoSymbol, DotPoint, GeneratorConfig, PresetPattern, SymbolSelection 
 
 const DEFAULT_CONFIG: GeneratorConfig = {
   gridSize: 256,
-  dotDist: 30,
-  dotRadius: 36,
-  dotRadiusY: 36,
+  dotDist: 38,
+  dotRadius: 40,
+  dotRadiusY: 40,
   metric: 2,
   gridType: 'random',
   seed: 'carto88',
-  symbolColor: '#2d6a4f',
-  backgroundColor: '#d8f3dc',
+  symbolColor: '#507040',
+  backgroundColor: '#a2c892',
   transparentBackground: false,
   casingWidth: 0,
   casingColor: '#ffffff',
@@ -31,13 +31,13 @@ export default function App() {
   const [config, setConfig] = useState<GeneratorConfig>(DEFAULT_CONFIG);
   const [selectedSymbols, setSelectedSymbols] = useState<SymbolSelection[]>([
     {
-      symbolId: 'bforest',
+      symbolId: 'wood-s',
       weight: 10,
       scale: 1.0,
       offsetX: 'auto',
       offsetY: 'auto',
       randomRotate: false,
-      color: '#2d6a4f',
+      color: '#507040',
     },
   ]);
   const [customSymbols, setCustomSymbols] = useState<CartoSymbol[]>([]);
@@ -183,13 +183,13 @@ export default function App() {
     setConfig(DEFAULT_CONFIG);
     setSelectedSymbols([
       {
-        symbolId: 'bforest',
+        symbolId: 'wood-s',
         weight: 10,
         scale: 1.0,
         offsetX: 'auto',
         offsetY: 'auto',
         randomRotate: false,
-        color: '#2d6a4f',
+        color: '#507040',
       },
     ]);
     setActivePresetId('');
@@ -381,20 +381,61 @@ export default function App() {
                 <div
                   className="rounded border border-slate-300 shadow-xs overflow-hidden relative"
                   style={{
-                    width: 280,
-                    height: 280,
-                    backgroundImage: `url("${svgDataUrl}")`,
-                    backgroundRepeat: 'repeat',
-                    backgroundSize: `${config.gridSize / 2}px ${config.gridSize / 2}px`,
+                    width: 288,
+                    height: 288,
                     backgroundColor: config.transparentBackground ? '#ffffff' : config.backgroundColor,
                   }}
                 >
+                  {config.transparentBackground && (
+                    <div className="absolute inset-0 bg-[linear-gradient(45deg,#cbd5e1_25%,transparent_25%),linear-gradient(-45deg,#cbd5e1_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#cbd5e1_75%),linear-gradient(-45deg,transparent_75%,#cbd5e1_75%)] [background-size:16px_16px] [background-position:0_0,0_8px,8px_-8px,-8px_0px] opacity-40 pointer-events-none" />
+                  )}
+                  {/* 3x3 Grid: Center core tile is 100% opacity, surrounding 8 perimeter tiles are dimmed */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, 1fr)',
+                      gridTemplateRows: 'repeat(3, 1fr)',
+                    }}
+                  >
+                    {Array.from({ length: 9 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-full h-full relative"
+                        style={{
+                          opacity: i === 4 ? 1 : 0.35,
+                          zIndex: i === 4 ? 10 : 1,
+                          backgroundImage: `url("${svgDataUrl}")`,
+                          backgroundRepeat: 'no-repeat',
+                          backgroundSize: '100% 100%',
+                        }}
+                      />
+                    ))}
+                  </div>
                   {showSeams && (
-                    <div className="absolute inset-0 pointer-events-none border border-emerald-600/40 grid grid-cols-2 grid-rows-2">
-                      <div className="border border-dashed border-emerald-600/50" />
-                      <div className="border border-dashed border-emerald-600/50" />
-                      <div className="border border-dashed border-emerald-600/50" />
-                      <div className="border border-dashed border-emerald-600/50" />
+                    <div
+                      className="absolute inset-0 pointer-events-none border border-emerald-600/40"
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gridTemplateRows: 'repeat(3, 1fr)',
+                      }}
+                    >
+                      {Array.from({ length: 9 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="border border-dashed border-emerald-600/40 flex items-start justify-start p-1"
+                          style={{
+                            backgroundColor: i === 4 ? 'rgba(5, 150, 105, 0.08)' : 'transparent',
+                          }}
+                        >
+                          {i === 4 && (
+                            <span className="text-[8px] font-mono font-bold text-emerald-700 bg-white/90 px-1 py-0.5 rounded border border-emerald-300 shadow-xs">
+                              核心单胞
+                            </span>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

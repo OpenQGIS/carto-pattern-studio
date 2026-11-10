@@ -258,21 +258,22 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
 
                   {/* Full Multi-Variant SVG Icons Display (separated by '|') */}
                   <td className="py-1.5 px-2">
-                    <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-[280px]">
+                    <div className="flex items-center overflow-x-auto no-scrollbar py-0.5 space-x-0.5">
                       {variants.map((vSvg, vIdx) => (
-                        <React.Fragment key={vIdx}>
+                        <div key={vIdx} className="flex items-center flex-shrink-0">
                           {vIdx > 0 && (
-                            <span className="text-slate-300 font-mono text-[10px] select-none flex-shrink-0">
+                            <span className="text-slate-300 text-[10px] px-1 select-none font-mono">
                               |
                             </span>
                           )}
-                          <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
+                          <div className="w-5 h-5 flex items-center justify-center">
                             <AutoSvgIcon
                               svgContent={vSvg}
+                              viewBox={item.variantViewBoxes?.[vIdx]}
                               className="w-4 h-4 text-slate-800"
                             />
                           </div>
-                        </React.Fragment>
+                        </div>
                       ))}
                     </div>
                   </td>
@@ -307,6 +308,7 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
             <AutoSvgIcon
               key={vIdx}
               svgContent={vSvg}
+              viewBox={activeSymbolObj.variantViewBoxes?.[vIdx]}
               className="w-8 h-8 text-emerald-700 flex-shrink-0"
             />
           ))}
@@ -321,7 +323,7 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
           <span className="text-slate-600 font-medium">偏移:</span>
           <input
             type="text"
-            value={activeSelection.offsetX === 'auto' ? '8' : activeSelection.offsetX}
+            value={activeSelection.offsetX === 'auto' ? (activeSymbolObj.defaultOffsetX ?? 8) : activeSelection.offsetX}
             onChange={(e) => {
               const val = parseInt(e.target.value) || 0;
               onUpdateSymbolConfig(activeSymbolId, { offsetX: val });
@@ -331,7 +333,7 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
           />
           <input
             type="text"
-            value={activeSelection.offsetY === 'auto' ? '8' : activeSelection.offsetY}
+            value={activeSelection.offsetY === 'auto' ? (activeSymbolObj.defaultOffsetY ?? 8) : activeSelection.offsetY}
             onChange={(e) => {
               const val = parseInt(e.target.value) || 0;
               onUpdateSymbolConfig(activeSymbolId, { offsetY: val });

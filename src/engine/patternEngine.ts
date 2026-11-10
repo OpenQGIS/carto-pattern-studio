@@ -77,7 +77,6 @@ export class PatternEngine {
     const invRadiusRatioSq = invRadiusRatio * invRadiusRatio;
 
     for (let s = 0; s < steps; s++) {
-      // Build spatial hash grid
       const grid: number[][] = Array.from({ length: gridCnt * gridCnt }, () => []);
       for (let i = 0; i < currentDots.length; i++) {
         const ix = Math.min(gridCnt - 1, Math.max(0, Math.floor((currentDots[i].x / gridSize) * gridCnt)));
@@ -113,7 +112,6 @@ export class PatternEngine {
               let dx = ptx - ptx2;
               let dy = pty - pty2;
 
-              // Periodic wrap distance
               if (Math.abs(dx) > gridSize / 2) {
                 if (ptx2 > ptx) dx = ptx - (ptx2 - gridSize);
                 else dx = ptx - (ptx2 + gridSize);
@@ -226,8 +224,7 @@ export class PatternEngine {
   }
 
   /**
-   * Render pattern into standard SVG markup with periodic boundary wrapping
-   * Correctly supports multi-variant symbols (e.g. wood, trees1..5, vpixel)
+   * Render pattern into standard SVG markup with accurate periodic boundary wrapping
    */
   static buildSvgString(
     dots: DotPoint[],
@@ -237,7 +234,6 @@ export class PatternEngine {
   ): string {
     const {
       gridSize,
-      dotRadius,
       symbolColor,
       backgroundColor,
       transparentBackground,
@@ -270,7 +266,6 @@ export class PatternEngine {
     };
 
     let defsContent = '';
-    // map for defs: symbolId -> variantIndex -> { main: string, casing?: string }
     const defsMap: Record<string, Array<{ main: string; casing?: string }>> = {};
 
     if (!inlineGeometries) {
@@ -349,28 +344,24 @@ export class PatternEngine {
         }
       };
 
+      // 1. Center placement
       patternElements += renderAt(cx, cy);
 
-      const threshold = dotRadius * scale + 16;
+      // 2. Accurate periodic boundary wrapping
+      // Threshold is based on the actual visual footprint of the symbol
+      const bThresh = Math.max(10, Math.min(28, 16 * scale));
 
-      if (cx < threshold) {
-        patternElements += renderAt(cx + gridSize, cy);
-        if (cy < threshold) patternElements += renderAt(cx + gridSize, cy + gridSize);
-        else if (cy > gridSize - threshold) patternElements += renderAt(cx + gridSize, cy - gridSize);
-      } else if (cx > gridSize - threshold) {
-        patternElements += renderAt(cx - gridSize, cy);
-        if (cy < threshold) patternElements += renderAt(cx - gridSize, cy + gridSize);
-        else if (cy > gridSize - threshold) patternElements += renderAt(cx - gridSize, cy - gridSize);
+      const wrapX = cx < bThresh ? 1 : (cx > gridSize - bThresh ? -1 : 0);
+      const wrapY = cy < bThresh ? 1 : (cy > gridSize - bThresh ? -1 : 0);
+
+      if (wrapX !== 0) {
+        patternElements += renderAt(cx + wrapX * gridSize, cy);
       }
-
-      if (cy < threshold) {
-        patternElements += renderAt(cx, cy + gridSize);
-        if (cx < threshold) patternElements += renderAt(cx + gridSize, cy + gridSize);
-        else if (cx > gridSize - threshold) patternElements += renderAt(cx - gridSize, cy + gridSize);
-      } else if (cy > gridSize - threshold) {
-        patternElements += renderAt(cx, cy - gridSize);
-        if (cx < threshold) patternElements += renderAt(cx + gridSize, cy - gridSize);
-        else if (cx > gridSize - threshold) patternElements += renderAt(cx - gridSize, cy - gridSize);
+      if (wrapY !== 0) {
+        patternElements += renderAt(cx, cy + wrapY * gridSize);
+      }
+      if (wrapX !== 0 && wrapY !== 0) {
+        patternElements += renderAt(cx + wrapX * gridSize, cy + wrapY * gridSize);
       }
     });
 

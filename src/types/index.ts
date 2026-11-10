@@ -15,6 +15,9 @@ export interface CartoSymbol {
   defaultOffsetX?: number;
   defaultOffsetY?: number;
   viewBox?: string;
+  variantViewBoxes?: string[];
+  width?: number;
+  height?: number;
 }
 
 export interface SymbolSelection {

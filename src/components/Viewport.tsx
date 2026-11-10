@@ -176,28 +176,48 @@ export const Viewport: React.FC<ViewportProps> = ({
               height: config.gridSize * 3,
             }}
           >
-            {/* Infinite Repeat Background Layer */}
+            {/* 3x3 Grid: Center core tile is 100% opacity, surrounding 8 perimeter tiles are dimmed */}
             <div
               className="w-full h-full"
               style={{
-                backgroundImage: `url("${svgDataUrl}")`,
-                backgroundRepeat: 'repeat',
-                backgroundSize: `${config.gridSize}px ${config.gridSize}px`,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gridTemplateRows: 'repeat(3, 1fr)',
                 backgroundColor: config.transparentBackground ? '#0f172a' : config.backgroundColor,
               }}
-            />
+            >
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-full h-full"
+                  style={{
+                    opacity: i === 4 ? 1 : 0.35,
+                    zIndex: i === 4 ? 10 : 1,
+                    backgroundImage: `url("${svgDataUrl}")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: '100% 100%',
+                  }}
+                />
+              ))}
+            </div>
 
             {/* Optional 3x3 Seam Overlay Grid */}
             {showSeams && (
               <div
-                className="absolute inset-0 pointer-events-none grid grid-cols-3 grid-rows-3 border-2 border-emerald-500/40"
+                className="absolute inset-0 pointer-events-none border-2 border-emerald-500/40"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gridTemplateRows: 'repeat(3, 1fr)',
+                }}
               >
                 {Array.from({ length: 9 }).map((_, i) => (
                   <div
                     key={i}
-                    className={`border border-dashed border-emerald-500/30 flex items-start justify-start p-2 ${
-                      i === 4 ? 'bg-emerald-500/5' : ''
-                    }`}
+                    className="border border-dashed border-emerald-500/30 flex items-start justify-start p-2"
+                    style={{
+                      backgroundColor: i === 4 ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
+                    }}
                   >
                     <span className="text-[10px] font-mono font-bold text-emerald-400/80 bg-slate-900/80 px-1 rounded">
                       {i === 4 ? '核心单胞 (Center)' : `拼贴 #${i + 1}`}

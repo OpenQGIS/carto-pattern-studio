@@ -4,6 +4,7 @@ interface AutoSvgIconProps {
   svgContent: string;
   className?: string;
   color?: string;
+  viewBox?: string;
   defaultViewBox?: string;
 }
 
@@ -11,12 +12,17 @@ export const AutoSvgIcon: React.FC<AutoSvgIconProps> = ({
   svgContent,
   className = 'w-5 h-5',
   color = 'currentColor',
+  viewBox: explicitViewBox,
   defaultViewBox = '0 0 16 16',
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [viewBox, setViewBox] = useState<string>(defaultViewBox);
+  const [viewBox, setViewBox] = useState<string>(explicitViewBox || defaultViewBox);
 
   useLayoutEffect(() => {
+    if (explicitViewBox) {
+      setViewBox(explicitViewBox);
+      return;
+    }
     if (!svgRef.current) return;
     try {
       // Find inner graphic element
@@ -35,12 +41,12 @@ export const AutoSvgIcon: React.FC<AutoSvgIconProps> = ({
     } catch (e) {
       // Fallback
     }
-  }, [svgContent]);
+  }, [svgContent, explicitViewBox]);
 
   return (
     <svg
       ref={svgRef}
-      viewBox={viewBox}
+      viewBox={explicitViewBox || viewBox}
       className={`${className} fill-current overflow-visible`}
       style={{ color }}
       dangerouslySetInnerHTML={{ __html: svgContent }}
