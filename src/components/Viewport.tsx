@@ -214,15 +214,8 @@ export const Viewport: React.FC<ViewportProps> = ({
                 {Array.from({ length: 9 }).map((_, i) => (
                   <div
                     key={i}
-                    className="border border-dashed border-emerald-500/30 flex items-start justify-start p-2"
-                    style={{
-                      backgroundColor: i === 4 ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
-                    }}
-                  >
-                    <span className="text-[10px] font-mono font-bold text-emerald-400/80 bg-slate-900/80 px-1 rounded">
-                      {i === 4 ? '核心单胞 (Center)' : `拼贴 #${i + 1}`}
-                    </span>
-                  </div>
+                    className="border border-dashed border-emerald-500/30"
+                  />
                 ))}
               </div>
             )}

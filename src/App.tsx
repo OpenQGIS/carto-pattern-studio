@@ -429,17 +429,8 @@ export default function App() {
                       {Array.from({ length: 9 }).map((_, i) => (
                         <div
                           key={i}
-                          className="border border-dashed border-emerald-600/40 flex items-start justify-start p-1.5"
-                          style={{
-                            backgroundColor: i === 4 ? 'rgba(5, 150, 105, 0.08)' : 'transparent',
-                          }}
-                        >
-                          {i === 4 && (
-                            <span className="text-[9px] font-mono font-bold text-emerald-800 bg-white/95 px-1.5 py-0.5 rounded border border-emerald-300 shadow-xs">
-                              核心单胞
-                            </span>
-                          )}
-                        </div>
+                          className="border border-dashed border-emerald-600/40"
+                        />
                       ))}
                     </div>
                   )}
