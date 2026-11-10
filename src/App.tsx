@@ -45,7 +45,7 @@ export default function App() {
   const [dots, setDots] = useState<DotPoint[]>([]);
 
   // Preview mode for Column 2
-  const [previewMode, setPreviewMode] = useState<'tile' | 'seamless' | 'map'>('tile');
+  const [previewMode, setPreviewMode] = useState<'tile' | 'seamless' | 'map'>('seamless');
   const [showSeams, setShowSeams] = useState(true);
   const [isCopied, setIsCopied] = useState(false);
 
@@ -365,14 +365,12 @@ export default function App() {
             </div>
 
             {/* Canvas / SVG Output Area */}
-            <div className="flex-1 flex items-center justify-center p-1.5 bg-slate-50 rounded-lg min-h-[360px] overflow-hidden">
+            <div className="flex-1 w-full flex items-center justify-center p-2 bg-slate-50 rounded-lg min-h-[380px] overflow-hidden">
               {/* Single Tile Mode */}
               {previewMode === 'tile' && (
                 <div
-                  className="rounded-lg border border-slate-300 shadow-xs overflow-hidden relative transition-transform"
+                  className="w-full rounded-lg border border-slate-300 shadow-xs overflow-hidden relative transition-transform"
                   style={{
-                    width: '100%',
-                    maxWidth: 320,
                     aspectRatio: '1 / 1',
                     backgroundColor: config.transparentBackground ? 'transparent' : config.backgroundColor,
                   }}
@@ -387,12 +385,8 @@ export default function App() {
               {/* 3x3 Seamless Grid Mode */}
               {previewMode === 'seamless' && (
                 <div
-                  className="rounded-lg border border-slate-300 shadow-sm overflow-hidden relative"
+                  className="w-full rounded-lg border border-slate-300 shadow-sm overflow-hidden relative"
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    maxWidth: '100%',
-                    maxHeight: '100%',
                     aspectRatio: '1 / 1',
                     backgroundColor: config.transparentBackground ? '#ffffff' : config.backgroundColor,
                   }}
