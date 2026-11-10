@@ -2,10 +2,9 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import seedrandom from 'seedrandom';
 import { Header } from './components/Header';
 import { Viewport } from './components/Viewport';
-import { SymbolControlPanel } from './components/SymbolControlPanel';
+import { SymbolStudio } from './components/SymbolStudio';
 import { DistributionControls } from './components/DistributionControls';
 import { AppearanceControls } from './components/AppearanceControls';
-import { SymbolPickerModal } from './components/SymbolPickerModal';
 import { ExportModal } from './components/ExportModal';
 import { HelpModal } from './components/HelpModal';
 import { CARTOGRAPHIC_SYMBOLS } from './data/symbolsData';
@@ -15,7 +14,7 @@ import { CartoSymbol, DotPoint, GeneratorConfig, PresetPattern, SymbolSelection 
 
 const DEFAULT_CONFIG: GeneratorConfig = {
   gridSize: 256,
-  dotDist: 34,
+  dotDist: 32,
   dotRadius: 40,
   dotRadiusY: 40,
   metric: 2,
@@ -34,30 +33,20 @@ export default function App() {
   const [config, setConfig] = useState<GeneratorConfig>(DEFAULT_CONFIG);
   const [selectedSymbols, setSelectedSymbols] = useState<SymbolSelection[]>([
     {
-      symbolId: 'tree-broad-o1',
-      weight: 6,
+      symbolId: 'tree-pair',
+      weight: 10,
       scale: 1.1,
       offsetX: 'auto',
       offsetY: 'auto',
       randomRotate: false,
       color: '#2d6a4f',
     },
-    {
-      symbolId: 'tree-needle-o1',
-      weight: 4,
-      scale: 1.1,
-      offsetX: 'auto',
-      offsetY: 'auto',
-      randomRotate: false,
-      color: '#1b4332',
-    },
   ]);
   const [customSymbols, setCustomSymbols] = useState<CartoSymbol[]>([]);
-  const [activePresetId, setActivePresetId] = useState<string>('osm-mixed-forest');
+  const [activePresetId, setActivePresetId] = useState<string>('');
   const [dots, setDots] = useState<DotPoint[]>([]);
 
   // Modals state
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -139,36 +128,56 @@ export default function App() {
     setDots(zigzagged);
   };
 
-  // Symbol management
-  const handleSelectSymbol = (symbol: CartoSymbol) => {
-    const exists = selectedSymbols.some((s) => s.symbolId === symbol.id);
-    if (!exists) {
-      setSelectedSymbols((prev) => [
-        ...prev,
-        {
-          symbolId: symbol.id,
-          weight: 5,
-          scale: 1.0,
-          offsetX: 'auto',
-          offsetY: 'auto',
-          randomRotate: false,
-          color: config.symbolColor,
-        },
-      ]);
-    }
-    setIsPickerOpen(false);
+  // Single symbol direct click
+  const handleSelectSingleSymbol = (symbolId: string) => {
+    setSelectedSymbols([
+      {
+        symbolId,
+        weight: 10,
+        scale: 1.0,
+        offsetX: 'auto',
+        offsetY: 'auto',
+        randomRotate: false,
+        color: config.symbolColor,
+      },
+    ]);
   };
 
-  const handleUpdateSymbol = (index: number, updates: Partial<SymbolSelection>) => {
+  // Toggle in multi-mix mode
+  const handleToggleSymbolInMix = (symbolId: string) => {
     setSelectedSymbols((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], ...updates };
-      return copy;
+      const exists = prev.some((s) => s.symbolId === symbolId);
+      if (exists) {
+        if (prev.length <= 1) return prev; // Keep at least one
+        return prev.filter((s) => s.symbolId !== symbolId);
+      } else {
+        return [
+          ...prev,
+          {
+            symbolId,
+            weight: 5,
+            scale: 1.0,
+            offsetX: 'auto',
+            offsetY: 'auto',
+            randomRotate: false,
+            color: config.symbolColor,
+          },
+        ];
+      }
     });
   };
 
-  const handleRemoveSymbol = (index: number) => {
-    setSelectedSymbols((prev) => prev.filter((_, i) => i !== index));
+  const handleUpdateSymbolConfig = (symbolId: string, updates: Partial<SymbolSelection>) => {
+    setSelectedSymbols((prev) =>
+      prev.map((s) => (s.symbolId === symbolId ? { ...s, ...updates } : s))
+    );
+  };
+
+  const handleRemoveSymbol = (symbolId: string) => {
+    setSelectedSymbols((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((s) => s.symbolId !== symbolId);
+    });
   };
 
   const handleAddCustomSymbol = (symbol: CartoSymbol) => {
@@ -189,8 +198,20 @@ export default function App() {
   };
 
   const handleReset = () => {
-    const defaultPreset = CARTOGRAPHIC_PRESETS[0];
-    handleSelectPreset(defaultPreset);
+    setConfig(DEFAULT_CONFIG);
+    setSelectedSymbols([
+      {
+        symbolId: 'tree-pair',
+        weight: 10,
+        scale: 1.1,
+        offsetX: 'auto',
+        offsetY: 'auto',
+        randomRotate: false,
+        color: '#2d6a4f',
+      },
+    ]);
+    setActivePresetId('');
+    setTimeout(regenerateGrid, 50);
   };
 
   // Generate SVG string using engine
@@ -221,14 +242,18 @@ export default function App() {
         </section>
 
         {/* Right Side: Control Panels (Scrollable) */}
-        <aside className="w-full lg:w-[420px] xl:w-[460px] flex flex-col space-y-4 overflow-y-auto max-h-[calc(100vh-5rem)] pr-1">
-          {/* Symbol Layers Panel */}
-          <SymbolControlPanel
+        <aside className="w-full lg:w-[460px] xl:w-[500px] flex flex-col space-y-4 overflow-y-auto max-h-[calc(100vh-5rem)] pr-1">
+          {/* Direct On-Page Symbol Studio (Select Any Symbol Directly) */}
+          <SymbolStudio
             selectedSymbols={selectedSymbols}
-            symbolLib={symbolLib}
-            onUpdateSymbol={handleUpdateSymbol}
+            onSelectSingleSymbol={handleSelectSingleSymbol}
+            onToggleSymbolInMix={handleToggleSymbolInMix}
+            onUpdateSymbolConfig={handleUpdateSymbolConfig}
             onRemoveSymbol={handleRemoveSymbol}
-            onOpenPicker={() => setIsPickerOpen(true)}
+            onAddCustomSymbol={handleAddCustomSymbol}
+            symbolLib={symbolLib}
+            customSymbols={customSymbols}
+            masterColor={config.symbolColor}
           />
 
           {/* Distribution & Relaxation Panel */}
@@ -252,16 +277,6 @@ export default function App() {
           />
         </aside>
       </main>
-
-      {/* Symbol Picker Modal */}
-      <SymbolPickerModal
-        isOpen={isPickerOpen}
-        onClose={() => setIsPickerOpen(false)}
-        onSelectSymbol={handleSelectSymbol}
-        onAddCustomSymbol={handleAddCustomSymbol}
-        customSymbols={customSymbols}
-        activeSymbolIds={selectedSymbols.map((s) => s.symbolId)}
-      />
 
       {/* Export & Download Modal */}
       <ExportModal
