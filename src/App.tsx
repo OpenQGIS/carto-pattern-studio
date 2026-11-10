@@ -161,6 +161,13 @@ export default function App() {
     });
   };
 
+  const handleRemoveSymbol = (symbolId: string) => {
+    setSelectedSymbols((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((s) => s.symbolId !== symbolId);
+    });
+  };
+
   const handleUpdateSymbolConfig = (symbolId: string, updates: Partial<SymbolSelection>) => {
     setSelectedSymbols((prev) =>
       prev.map((s) => (s.symbolId === symbolId ? { ...s, ...updates } : s))
@@ -358,14 +365,15 @@ export default function App() {
             </div>
 
             {/* Canvas / SVG Output Area */}
-            <div className="flex-1 flex items-center justify-center p-2 bg-slate-50 rounded-lg min-h-[340px] overflow-hidden">
+            <div className="flex-1 flex items-center justify-center p-1.5 bg-slate-50 rounded-lg min-h-[360px] overflow-hidden">
               {/* Single Tile Mode */}
               {previewMode === 'tile' && (
                 <div
                   className="rounded-lg border border-slate-300 shadow-xs overflow-hidden relative transition-transform"
                   style={{
-                    width: 270,
-                    height: 270,
+                    width: '100%',
+                    maxWidth: 320,
+                    aspectRatio: '1 / 1',
                     backgroundColor: config.transparentBackground ? 'transparent' : config.backgroundColor,
                   }}
                 >
@@ -379,8 +387,13 @@ export default function App() {
               {/* 3x3 Seamless Grid Mode */}
               {previewMode === 'seamless' && (
                 <div
-                  className="w-full max-w-[340px] aspect-square rounded-lg border border-slate-300 shadow-sm overflow-hidden relative"
+                  className="rounded-lg border border-slate-300 shadow-sm overflow-hidden relative"
                   style={{
+                    width: '100%',
+                    height: '100%',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    aspectRatio: '1 / 1',
                     backgroundColor: config.transparentBackground ? '#ffffff' : config.backgroundColor,
                   }}
                 >
@@ -485,6 +498,7 @@ export default function App() {
               selectedSymbols={selectedSymbols}
               onUseSymbol={handleUseSymbol}
               onAddSymbol={handleAddSymbol}
+              onRemoveSymbol={handleRemoveSymbol}
               onUpdateSymbolConfig={handleUpdateSymbolConfig}
               onAddCustomSymbol={handleAddCustomSymbol}
               symbolLib={symbolLib}
