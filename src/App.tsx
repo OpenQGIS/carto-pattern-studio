@@ -256,7 +256,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4f5f8] text-slate-800">
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-[#f4f5f8] text-slate-800">
       {/* Top Navbar */}
       <Header
         onSelectPreset={handleSelectPreset}
@@ -267,22 +267,28 @@ export default function App() {
       />
 
       {/* Main Studio Container */}
-      <main className="flex-1 p-4 max-w-[1700px] w-full mx-auto flex flex-col space-y-4">
+      <main className="flex-1 min-h-0 p-2.5 max-w-[1750px] w-full mx-auto flex flex-col gap-2 overflow-hidden">
         {/* TOP ROW: 3-Column Classic Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch overflow-hidden">
           {/* COLUMN 1: 点状模式 (Dot Pattern) */}
-          <div className="lg:col-span-4 bg-white border border-slate-300 rounded-xl p-3 flex flex-col shadow-xs">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200 mb-2">
+          <div className="lg:col-span-4 bg-white border border-slate-300 rounded-xl p-2.5 flex flex-col shadow-xs overflow-hidden h-full">
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-200 mb-1 flex-shrink-0">
               <strong className="text-xs text-slate-800">点状模式:</strong>
               <span className="text-[10px] text-slate-500 font-mono font-medium">
                 {dots.length} 点位
               </span>
             </div>
 
-            <div className="flex-1 flex items-center justify-center p-2 bg-slate-50 rounded-lg min-h-[300px]">
+            <div className="flex-1 min-h-0 flex items-center justify-center p-1.5 bg-slate-50 rounded-lg overflow-hidden">
               <div
                 className="bg-white rounded border border-slate-300 shadow-xs overflow-hidden relative"
-                style={{ width: 256, height: 256 }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  maxHeight: '100%',
+                  maxWidth: '100%',
+                  aspectRatio: '1 / 1',
+                }}
               >
                 <svg viewBox={`0 0 ${config.gridSize} ${config.gridSize}`} className="w-full h-full">
                   {dots.map((d, i) => (
@@ -291,23 +297,23 @@ export default function App() {
                 </svg>
               </div>
             </div>
-            <div className="text-[10px] text-slate-500 text-center pt-2">
+            <div className="text-[10px] text-slate-500 text-center pt-1 flex-shrink-0">
               周期边界拓扑点位网格 ({config.gridSize}×{config.gridSize} px)
             </div>
           </div>
 
           {/* COLUMN 2: 符号图案 (Symbol Pattern & Live Render) */}
-          <div className="lg:col-span-4 bg-white border border-slate-300 rounded-xl p-3 flex flex-col shadow-xs">
+          <div className="lg:col-span-4 bg-white border border-slate-300 rounded-xl p-2.5 flex flex-col shadow-xs overflow-hidden h-full">
             {/* Top Toolbar: Color Pickers & Preview Switcher */}
-            <div className="flex flex-wrap items-center justify-between pb-2 border-b border-slate-200 mb-2 gap-2">
-              <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center justify-between pb-1.5 border-b border-slate-200 mb-1 gap-1 flex-shrink-0">
+              <div className="flex items-center space-x-1.5">
                 <strong className="text-xs text-slate-800">符号图案:</strong>
                 {/* Symbol Color Picker */}
                 <input
                   type="color"
                   value={config.symbolColor}
                   onChange={(e) => setConfig((prev) => ({ ...prev, symbolColor: e.target.value }))}
-                  className="w-5 h-5 rounded cursor-pointer border border-slate-300 bg-transparent"
+                  className="w-4 h-4 rounded cursor-pointer border border-slate-300 bg-transparent"
                   title="符号颜色"
                 />
                 {/* Background Color Picker */}
@@ -317,7 +323,7 @@ export default function App() {
                   onChange={(e) =>
                     setConfig((prev) => ({ ...prev, backgroundColor: e.target.value, transparentBackground: false }))
                   }
-                  className="w-5 h-5 rounded cursor-pointer border border-slate-300 bg-transparent"
+                  className="w-4 h-4 rounded cursor-pointer border border-slate-300 bg-transparent"
                   title="背景底色"
                 />
                 {/* Transparent toggle */}
@@ -337,7 +343,7 @@ export default function App() {
                 <button
                   onClick={() => setPreviewMode('tile')}
                   className={`px-1.5 py-0.5 rounded transition ${
-                    previewMode === 'tile' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    previewMode === 'tile' ? 'bg-emerald-600 text-white font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                   title="单格单胞"
                 >
@@ -346,7 +352,7 @@ export default function App() {
                 <button
                   onClick={() => setPreviewMode('seamless')}
                   className={`px-1.5 py-0.5 rounded transition ${
-                    previewMode === 'seamless' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    previewMode === 'seamless' ? 'bg-emerald-600 text-white font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                   title="3x3 无缝矩阵"
                 >
@@ -355,7 +361,7 @@ export default function App() {
                 <button
                   onClick={() => setPreviewMode('map')}
                   className={`px-1.5 py-0.5 rounded transition ${
-                    previewMode === 'map' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    previewMode === 'map' ? 'bg-emerald-600 text-white font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                   title="地图面填充实景"
                 >
@@ -365,12 +371,16 @@ export default function App() {
             </div>
 
             {/* Canvas / SVG Output Area */}
-            <div className="flex-1 w-full flex items-center justify-center p-2 bg-slate-50 rounded-lg min-h-[380px] overflow-hidden">
+            <div className="flex-1 min-h-0 w-full flex items-center justify-center p-1.5 bg-slate-50 rounded-lg overflow-hidden">
               {/* Single Tile Mode */}
               {previewMode === 'tile' && (
                 <div
-                  className="w-full rounded-lg border border-slate-300 shadow-xs overflow-hidden relative transition-transform"
+                  className="rounded-lg border border-slate-300 shadow-xs overflow-hidden relative transition-transform"
                   style={{
+                    width: '100%',
+                    height: '100%',
+                    maxHeight: '100%',
+                    maxWidth: '100%',
                     aspectRatio: '1 / 1',
                     backgroundColor: config.transparentBackground ? 'transparent' : config.backgroundColor,
                   }}
@@ -385,8 +395,12 @@ export default function App() {
               {/* 3x3 Seamless Grid Mode */}
               {previewMode === 'seamless' && (
                 <div
-                  className="w-full rounded-lg border border-slate-300 shadow-sm overflow-hidden relative"
+                  className="rounded-lg border border-slate-300 shadow-sm overflow-hidden relative"
                   style={{
+                    width: '100%',
+                    height: '100%',
+                    maxHeight: '100%',
+                    maxWidth: '100%',
                     aspectRatio: '1 / 1',
                     backgroundColor: config.transparentBackground ? '#ffffff' : config.backgroundColor,
                   }}
@@ -439,7 +453,7 @@ export default function App() {
 
               {/* Map Polygon Simulation */}
               {previewMode === 'map' && (
-                <div className="w-full h-[280px] bg-[#cad2c5] rounded border border-slate-300 overflow-hidden relative shadow-xs">
+                <div className="w-full h-full bg-[#cad2c5] rounded border border-slate-300 overflow-hidden relative shadow-xs">
                   <svg viewBox="0 0 300 280" className="w-full h-full">
                     <defs>
                       <pattern id="classicMapPat" patternUnits="userSpaceOnUse" width={64} height={64}>
@@ -464,7 +478,7 @@ export default function App() {
               )}
             </div>
 
-            <div className="text-[10px] text-slate-500 text-center pt-2 flex items-center justify-center space-x-3">
+            <div className="text-[10px] text-slate-500 text-center pt-1 flex items-center justify-center space-x-3 flex-shrink-0">
               <span>无缝周期渲染</span>
               {previewMode === 'seamless' && (
                 <button
@@ -478,7 +492,7 @@ export default function App() {
           </div>
 
           {/* COLUMN 3: 符号定义 (Classic Symbol Table & Inspector) */}
-          <div className="lg:col-span-4 h-full">
+          <div className="lg:col-span-4 h-full min-h-0 overflow-hidden">
             <ClassicSymbolTable
               selectedSymbols={selectedSymbols}
               onUseSymbol={handleUseSymbol}
