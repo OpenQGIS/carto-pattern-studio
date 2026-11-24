@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import seedrandom from 'seedrandom';
 import { Header } from './components/Header';
 import { ClassicSymbolTable } from './components/ClassicSymbolTable';
@@ -28,25 +28,76 @@ const DEFAULT_CONFIG: GeneratorConfig = {
   symbolOrder: 'random',
 };
 
+const STORAGE_KEY = 'carto-pattern-studio:state:v1';
+
+const DEFAULT_SYMBOLS: SymbolSelection[] = [
+  {
+    symbolId: 'wood-s',
+    weight: 10,
+    scale: 1.0,
+    offsetX: 'auto',
+    offsetY: 'auto',
+    randomRotate: false,
+  },
+];
+
+interface SavedStudioState {
+  config?: Partial<GeneratorConfig>;
+  selectedSymbols?: SymbolSelection[];
+  customSymbols?: CartoSymbol[];
+  activePresetId?: string;
+  dots?: DotPoint[];
+  previewMode?: 'tile' | 'seamless' | 'map';
+  showSeams?: boolean;
+}
+
+function loadSavedState(): SavedStudioState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export default function App() {
-  const [config, setConfig] = useState<GeneratorConfig>(DEFAULT_CONFIG);
-  const [selectedSymbols, setSelectedSymbols] = useState<SymbolSelection[]>([
-    {
-      symbolId: 'wood-s',
-      weight: 10,
-      scale: 1.0,
-      offsetX: 'auto',
-      offsetY: 'auto',
-      randomRotate: false,
-    },
-  ]);
-  const [customSymbols, setCustomSymbols] = useState<CartoSymbol[]>([]);
-  const [activePresetId, setActivePresetId] = useState<string>('');
-  const [dots, setDots] = useState<DotPoint[]>([]);
+  const savedRef = useRef<SavedStudioState | null>(null);
+  if (savedRef.current === null) {
+    savedRef.current = loadSavedState();
+  }
+  const saved = savedRef.current;
+
+  const [config, setConfig] = useState<GeneratorConfig>(() => ({
+    ...DEFAULT_CONFIG,
+    ...(saved.config || {}),
+  }));
+  const [selectedSymbols, setSelectedSymbols] = useState<SymbolSelection[]>(() =>
+    Array.isArray(saved.selectedSymbols) && saved.selectedSymbols.length > 0
+      ? saved.selectedSymbols
+      : DEFAULT_SYMBOLS
+  );
+  const [customSymbols, setCustomSymbols] = useState<CartoSymbol[]>(() =>
+    Array.isArray(saved.customSymbols) ? saved.customSymbols : []
+  );
+  const [activePresetId, setActivePresetId] = useState<string>(() =>
+    typeof saved.activePresetId === 'string' ? saved.activePresetId : ''
+  );
+  const [dots, setDots] = useState<DotPoint[]>(() =>
+    Array.isArray(saved.dots) && saved.dots.length > 0 ? saved.dots : []
+  );
+  const skipInitialRegenRef = useRef(Array.isArray(saved.dots) && saved.dots.length > 0);
 
   // Preview mode for Column 2
-  const [previewMode, setPreviewMode] = useState<'tile' | 'seamless' | 'map'>('seamless');
-  const [showSeams, setShowSeams] = useState(true);
+  const [previewMode, setPreviewMode] = useState<'tile' | 'seamless' | 'map'>(() =>
+    saved.previewMode === 'tile' || saved.previewMode === 'seamless' || saved.previewMode === 'map'
+      ? saved.previewMode
+      : 'seamless'
+  );
+  const [showSeams, setShowSeams] = useState<boolean>(() =>
+    typeof saved.showSeams === 'boolean' ? saved.showSeams : true
+  );
   const [isCopied, setIsCopied] = useState(false);
 
   // Modals state
@@ -86,8 +137,30 @@ export default function App() {
   }, [config.gridSize, config.dotDist, config.gridType, config.dotRadius, config.dotRadiusY, config.metric, config.seed]);
 
   useEffect(() => {
+    if (skipInitialRegenRef.current) {
+      skipInitialRegenRef.current = false;
+      return;
+    }
     regenerateGrid();
   }, [regenerateGrid]);
+
+  // Persist user settings to localStorage across page reloads
+  useEffect(() => {
+    try {
+      const payload: SavedStudioState = {
+        config,
+        selectedSymbols,
+        customSymbols,
+        activePresetId,
+        dots,
+        previewMode,
+        showSeams,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // Ignore storage quota or private-mode errors
+    }
+  }, [config, selectedSymbols, customSymbols, activePresetId, dots, previewMode, showSeams]);
 
   // Relaxation and spatial transforms
   const handleRelax = (steps: number) => {
@@ -185,19 +258,16 @@ export default function App() {
   };
 
   const handleReset = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
     setConfig(DEFAULT_CONFIG);
-    setSelectedSymbols([
-      {
-        symbolId: 'wood-s',
-        weight: 10,
-        scale: 1.0,
-        offsetX: 'auto',
-        offsetY: 'auto',
-        randomRotate: false,
-        color: '#507040',
-      },
-    ]);
+    setSelectedSymbols(DEFAULT_SYMBOLS);
     setActivePresetId('');
+    setPreviewMode('seamless');
+    setShowSeams(true);
     setTimeout(regenerateGrid, 50);
   };
 
