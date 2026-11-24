@@ -38,7 +38,6 @@ export default function App() {
       offsetX: 'auto',
       offsetY: 'auto',
       randomRotate: false,
-      color: '#507040',
     },
   ]);
   const [customSymbols, setCustomSymbols] = useState<CartoSymbol[]>([]);
@@ -135,7 +134,6 @@ export default function App() {
         offsetX: 'auto',
         offsetY: 'auto',
         randomRotate: false,
-        color: config.symbolColor,
       },
     ]);
   };
@@ -156,7 +154,6 @@ export default function App() {
           offsetX: 'auto',
           offsetY: 'auto',
           randomRotate: false,
-          color: config.symbolColor,
         },
       ];
     });
@@ -505,6 +502,7 @@ export default function App() {
               customSymbols={customSymbols}
               symbolOrder={config.symbolOrder || 'random'}
               onChangeSymbolOrder={(mode) => setConfig((prev) => ({ ...prev, symbolOrder: mode }))}
+              defaultSymbolColor={config.symbolColor}
             />
           </div>
         </div>

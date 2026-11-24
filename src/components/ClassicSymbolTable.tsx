@@ -15,6 +15,7 @@ interface ClassicSymbolTableProps {
   customSymbols: CartoSymbol[];
   symbolOrder?: SymbolOrderMode;
   onChangeSymbolOrder?: (mode: SymbolOrderMode) => void;
+  defaultSymbolColor?: string;
 }
 
 const PALETTE = ['#059669', '#2563eb', '#d97706', '#7c3aed', '#db2777', '#0891b2', '#16a34a'];
@@ -30,6 +31,7 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
   customSymbols,
   symbolOrder = 'random',
   onChangeSymbolOrder,
+  defaultSymbolColor = '#507040',
 }) => {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -556,21 +558,36 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Symbol Preview Box */}
-          <div className="min-w-10 h-10 bg-white border border-slate-300 rounded-md flex items-center justify-center p-0.5 shadow-2xs relative overflow-x-auto no-scrollbar gap-0.5">
+          {/* Clickable Symbol Preview Box -> Color Picker for this symbol */}
+          <label
+            className="min-w-10 h-10 bg-white border border-slate-300 hover:border-emerald-500 rounded-md flex items-center justify-center p-0.5 shadow-2xs relative overflow-hidden gap-0.5 cursor-pointer group transition"
+            title="点击设置当前图标颜色"
+          >
+            <input
+              type="color"
+              value={activeSelection.color || defaultSymbolColor}
+              onChange={(e) => onUpdateSymbolConfig(currentInspectedId, { color: e.target.value })}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              aria-label="设置当前图标颜色"
+            />
             {activeVariants.slice(0, 4).map((vSvg, vIdx) => (
               <AutoSvgIcon
                 key={vIdx}
                 svgContent={vSvg}
                 viewBox={activeSymbolObj?.variantViewBoxes?.[vIdx]}
-                className="w-6 h-6 text-emerald-700 flex-shrink-0"
+                color={activeSelection.color || defaultSymbolColor}
+                className="w-6 h-6 flex-shrink-0 pointer-events-none"
               />
             ))}
             {activeVariants.length > 4 && (
-              <span className="text-[9px] text-slate-400 font-mono">+{activeVariants.length - 4}</span>
+              <span className="text-[9px] text-slate-400 font-mono pointer-events-none">+{activeVariants.length - 4}</span>
             )}
-            <div className="absolute inset-0 border border-dashed border-emerald-400/50 pointer-events-none rounded-md" />
-          </div>
+            <span
+              className="w-2.5 h-2.5 rounded-full border border-white shadow-xs absolute bottom-0.5 right-0.5 pointer-events-none"
+              style={{ backgroundColor: activeSelection.color || defaultSymbolColor }}
+            />
+            <div className="absolute inset-0 border border-dashed border-emerald-400/50 group-hover:border-emerald-500 pointer-events-none rounded-md" />
+          </label>
 
           {/* Offsets X / Y */}
           <div className="flex items-center space-x-1">
