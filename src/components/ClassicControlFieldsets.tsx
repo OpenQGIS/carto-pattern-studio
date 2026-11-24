@@ -111,6 +111,9 @@ export const ClassicControlFieldsets: React.FC<ClassicControlFieldsetsProps> = (
               { type: 'triangular' as GridPatternType, label: '☵ 正三角', title: '正三角网格' },
               { type: 'triangular2' as GridPatternType, label: '☶ 斜三角', title: '斜向三角网格' },
               { type: 'square' as GridPatternType, label: '☲ 正方', title: '正交方格' },
+              { type: 'diamond' as GridPatternType, label: '◇ 45°菱方', title: '45° 方向正方形错位（菱形/梅花点阵）' },
+              { type: 'vrect' as GridPatternType, label: '▯ 竖矩形', title: '竖向长方形网格（高 > 宽）' },
+              { type: 'vbrick' as GridPatternType, label: '▥ 竖错位', title: '竖向砖墙错位网格（奇偶列上下错半格）' },
               { type: 'snub' as GridPatternType, label: '5 扭棱', title: '扭棱正方网格' },
             ].map((g) => (
               <button
@@ -119,7 +122,7 @@ export const ClassicControlFieldsets: React.FC<ClassicControlFieldsetsProps> = (
                   onUpdateConfig({ gridType: g.type });
                   setTimeout(onRegenerate, 50);
                 }}
-                className={`px-1.5 py-0.5 text-[11px] rounded border transition ${
+                className={`px-1.5 py-0.5 text-[10px] rounded border transition ${
                   config.gridType === g.type
                     ? 'bg-emerald-600 border-emerald-600 text-white font-bold shadow-2xs'
                     : 'bg-slate-50 border-slate-300 text-slate-700 hover:bg-slate-100'

@@ -1,4 +1,12 @@
-export type GridPatternType = 'random' | 'triangular' | 'triangular2' | 'square' | 'snub';
+export type GridPatternType =
+  | 'random'
+  | 'triangular'
+  | 'triangular2'
+  | 'square'
+  | 'snub'
+  | 'diamond'
+  | 'vrect'
+  | 'vbrick';
 export type SymbolOrderMode = 'random' | 'alternate' | 'checkerboard';
 
 export interface DotPoint {

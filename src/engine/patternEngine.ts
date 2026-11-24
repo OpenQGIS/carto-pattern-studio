@@ -12,11 +12,21 @@ export class PatternEngine {
     rng: () => number
   ): DotPoint[] {
     const dots: DotPoint[] = [];
-    const dotCntL = Math.max(1, Math.floor(gridSize / dotDist));
+    let dotCntL = Math.max(1, Math.floor(gridSize / dotDist));
     let dotCntL2 = dotCntL;
 
     if (gridType === 'triangular' || gridType === 'triangular2') {
       dotCntL2 = Math.floor(gridSize / (dotDist * 0.5 * Math.sqrt(3.0)));
+      if (dotCntL2 % 2 > 0) dotCntL2 += 1;
+    } else if (gridType === 'diamond') {
+      dotCntL = Math.max(2, Math.floor(gridSize / (dotDist * Math.SQRT2)));
+      dotCntL2 = dotCntL;
+    } else if (gridType === 'vrect') {
+      dotCntL = Math.max(2, Math.floor(gridSize / (dotDist * 1.5)));
+      dotCntL2 = Math.max(2, Math.floor(gridSize / dotDist));
+    } else if (gridType === 'vbrick') {
+      dotCntL = Math.max(2, Math.floor(gridSize / (dotDist * 1.4)));
+      dotCntL2 = Math.max(2, Math.floor(gridSize / dotDist));
       if (dotCntL2 % 2 > 0) dotCntL2 += 1;
     }
 
@@ -34,9 +44,16 @@ export class PatternEngine {
         } else if (gridType === 'triangular2') {
           cy = (px + 0.5) * distCompX;
           cx = px % 2 === 0 ? (py + 0.25) * distCompY : (py + 0.75) * distCompY;
-        } else if (gridType === 'square') {
+        } else if (gridType === 'square' || gridType === 'vrect') {
           cx = (px + 0.5) * distCompX;
           cy = (py + 0.5) * distCompY;
+        } else if (gridType === 'vbrick') {
+          cx = (px + 0.5) * distCompX;
+          cy = px % 2 === 0 ? (py + 0.25) * distCompY : (py + 0.75) * distCompY;
+        } else if (gridType === 'diamond') {
+          dots.push({ x: (px + 0.25) * distCompX, y: (py + 0.25) * distCompY, type: 2, col: 0, row: py * 2 });
+          dots.push({ x: (px + 0.75) * distCompX, y: (py + 0.75) * distCompY, type: 2, col: 0, row: py * 2 + 1 });
+          continue;
         } else if (gridType === 'snub') {
           const offset = 1.0 - 0.5 * 0.258819045103;
           dots.push({ x: (px + offset) * distCompX, y: (py + offset) * distCompY, type: 2, col: px * 2, row: py * 2 });
