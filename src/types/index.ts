@@ -1,9 +1,12 @@
 export type GridPatternType = 'random' | 'triangular' | 'triangular2' | 'square' | 'snub';
+export type SymbolOrderMode = 'random' | 'alternate' | 'checkerboard';
 
 export interface DotPoint {
   x: number;
   y: number;
   type?: number;
+  col?: number;
+  row?: number;
 }
 
 export interface CartoSymbol {
@@ -47,6 +50,7 @@ export interface GeneratorConfig {
   casingColor: string;
   pixelAlign: boolean;
   inlineGeometries: boolean; // For GIS/QGIS compatibility
+  symbolOrder?: SymbolOrderMode; // 'random' | 'alternate' | 'checkerboard'
 }
 
 export interface PresetPattern {

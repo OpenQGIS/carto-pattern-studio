@@ -25,6 +25,7 @@ const DEFAULT_CONFIG: GeneratorConfig = {
   casingColor: '#ffffff',
   pixelAlign: false,
   inlineGeometries: true,
+  symbolOrder: 'random',
 };
 
 export default function App() {
@@ -502,6 +503,8 @@ export default function App() {
               onAddCustomSymbol={handleAddCustomSymbol}
               symbolLib={symbolLib}
               customSymbols={customSymbols}
+              symbolOrder={config.symbolOrder || 'random'}
+              onChangeSymbolOrder={(mode) => setConfig((prev) => ({ ...prev, symbolOrder: mode }))}
             />
           </div>
         </div>

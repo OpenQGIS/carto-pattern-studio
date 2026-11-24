@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Plus, Upload, Sliders, Trash2, RefreshCw } from 'lucide-react';
 import { CARTOGRAPHIC_SYMBOLS } from '../data/symbolsData';
-import { CartoSymbol, SymbolSelection } from '../types';
+import { CartoSymbol, SymbolOrderMode, SymbolSelection } from '../types';
 import { AutoSvgIcon } from './AutoSvgIcon';
 
 interface ClassicSymbolTableProps {
@@ -13,6 +13,8 @@ interface ClassicSymbolTableProps {
   onAddCustomSymbol: (symbol: CartoSymbol) => void;
   symbolLib: Record<string, CartoSymbol>;
   customSymbols: CartoSymbol[];
+  symbolOrder?: SymbolOrderMode;
+  onChangeSymbolOrder?: (mode: SymbolOrderMode) => void;
 }
 
 const PALETTE = ['#059669', '#2563eb', '#d97706', '#7c3aed', '#db2777', '#0891b2', '#16a34a'];
@@ -26,6 +28,8 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
   onAddCustomSymbol,
   symbolLib,
   customSymbols,
+  symbolOrder = 'random',
+  onChangeSymbolOrder,
 }) => {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -153,19 +157,48 @@ export const ClassicSymbolTable: React.FC<ClassicSymbolTableProps> = ({
       {/* Multi-Symbol Mix & Weight Manager (Visible when 2 or more symbols are selected) */}
       {selectedSymbols.length > 1 && (
         <div className="p-2 bg-gradient-to-b from-emerald-50/80 to-slate-50/90 border-b border-emerald-200/80 flex-shrink-0">
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center justify-between mb-1 gap-1 flex-wrap">
             <div className="flex items-center space-x-1.5 text-[11px] font-bold text-slate-800">
               <Sliders className="w-3 h-3 text-emerald-600" />
-              <span>多要素权重分配</span>
+              <span>多要素分配</span>
             </div>
-            <button
-              onClick={handleEqualizeWeights}
-              className="text-[9px] text-emerald-700 hover:text-emerald-800 bg-white border border-emerald-300 rounded px-1.5 py-0.2 shadow-2xs font-medium flex items-center space-x-1"
-              title="将所有要素权重设为均等比例"
-            >
-              <RefreshCw className="w-2.5 h-2.5" />
-              <span>均等比例 (1:1)</span>
-            </button>
+
+            <div className="flex items-center space-x-1">
+              {onChangeSymbolOrder && (
+                <div className="flex items-center bg-white border border-slate-300 rounded p-0.5 text-[9px] shadow-2xs">
+                  {[
+                    { id: 'random' as SymbolOrderMode, label: '随机', title: '按权重比例随机分布' },
+                    { id: 'alternate' as SymbolOrderMode, label: '轮流', title: '按点位顺序 1→2→1→2 轮流交替' },
+                    { id: 'checkerboard' as SymbolOrderMode, label: '棋盘', title: '2D 网格错位交替（相邻图标不重复）' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => onChangeSymbolOrder(opt.id)}
+                      className={`px-1.5 py-0.2 rounded transition ${
+                        symbolOrder === opt.id
+                          ? 'bg-emerald-600 text-white font-bold shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title={opt.title}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {symbolOrder === 'random' && (
+                <button
+                  onClick={handleEqualizeWeights}
+                  className="text-[9px] text-emerald-700 hover:text-emerald-800 bg-white border border-emerald-300 rounded px-1.5 py-0.5 shadow-2xs font-medium flex items-center space-x-1"
+                  title="将所有要素权重设为均等比例"
+                >
+                  <RefreshCw className="w-2.5 h-2.5" />
+                  <span>1:1</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Visual Proportion Segmented Progress Bar */}

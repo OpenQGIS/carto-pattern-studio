@@ -39,10 +39,10 @@ export class PatternEngine {
           cy = (py + 0.5) * distCompY;
         } else if (gridType === 'snub') {
           const offset = 1.0 - 0.5 * 0.258819045103;
-          dots.push({ x: (px + offset) * distCompX, y: (py + offset) * distCompY, type: 2 });
-          dots.push({ x: (px + offset - 0.5) * distCompX, y: (py + offset - 0.5 * 0.258819045103) * distCompY, type: 2 });
-          dots.push({ x: (px + offset - 0.5 * 0.258819045103) * distCompX, y: (py + offset - 0.5) * distCompY, type: 2 });
-          dots.push({ x: (px + offset - 1 + 0.36520324788187813) * distCompX, y: (py + offset - 1 + 0.36520324788187813) * distCompY, type: 2 });
+          dots.push({ x: (px + offset) * distCompX, y: (py + offset) * distCompY, type: 2, col: px * 2, row: py * 2 });
+          dots.push({ x: (px + offset - 0.5) * distCompX, y: (py + offset - 0.5 * 0.258819045103) * distCompY, type: 2, col: px * 2 + 1, row: py * 2 });
+          dots.push({ x: (px + offset - 0.5 * 0.258819045103) * distCompX, y: (py + offset - 0.5) * distCompY, type: 2, col: px * 2, row: py * 2 + 1 });
+          dots.push({ x: (px + offset - 1 + 0.36520324788187813) * distCompX, y: (py + offset - 1 + 0.36520324788187813) * distCompY, type: 2, col: px * 2 + 1, row: py * 2 + 1 });
           continue;
         } else {
           // Default: Random displaced grid
@@ -50,7 +50,7 @@ export class PatternEngine {
           cy = (py + 0.05 + rng() * 0.9) * (gridSize / dotCntL);
         }
 
-        dots.push({ x: cx, y: cy, type: 2 });
+        dots.push({ x: cx, y: cy, type: 2, col: px, row: py });
       }
     }
 
@@ -295,7 +295,9 @@ export class PatternEngine {
 
     let patternElements = '';
 
-    dots.forEach((dot) => {
+    const symbolOrder = config.symbolOrder || 'random';
+
+    dots.forEach((dot, dotIdx) => {
       let cx = dot.x;
       let cy = dot.y;
 
@@ -304,8 +306,19 @@ export class PatternEngine {
         cy = Math.round(cy - 0.5);
       }
 
-      const symIndex = Math.floor(rng() * symbolPool.length);
-      const sel = symbolPool[symIndex];
+      let sel: SymbolSelection;
+      if (symbolOrder === 'alternate') {
+        sel = selectedSymbols[dotIdx % selectedSymbols.length];
+      } else if (symbolOrder === 'checkerboard') {
+        const idx =
+          dot.col !== undefined && dot.row !== undefined
+            ? (dot.col + dot.row) % selectedSymbols.length
+            : dotIdx % selectedSymbols.length;
+        sel = selectedSymbols[idx];
+      } else {
+        const symIndex = Math.floor(rng() * symbolPool.length);
+        sel = symbolPool[symIndex];
+      }
       const symbol = symbolLib[sel.symbolId];
       if (!symbol) return;
 
